@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   FormGroup,
@@ -22,8 +22,11 @@ import {
   MatCardContent,
   MatCardActions,
 } from '@angular/material/card';
+import { MatDialog } from '@angular/material/dialog';
 import { Meta } from '@angular/platform-browser';
 import { UserService } from '../../services/user.service';
+import { AuthService } from '../../services/auth.service';
+import { AlertDialogComponent } from '../alert-dialog/alert-dialog.component';
 
 @Component({
   selector: 'app-login',
@@ -48,6 +51,13 @@ import { UserService } from '../../services/user.service';
   ],
 })
 export class LoginComponent implements OnInit {
+  private meta = inject(Meta);
+  private http = inject(UserService);
+  private router = inject(Router);
+  private formBuilder = inject(FormBuilder);
+  private auth = inject(AuthService);
+  private dialog = inject(MatDialog);
+
   // Form Validation
   loginForm!: FormGroup;
   submitted: boolean = false;
@@ -69,13 +79,6 @@ export class LoginComponent implements OnInit {
   // สำหรับซ่อนแสดง password
   hide = true;
 
-  constructor(
-    private router: Router,
-    private formBuilder: FormBuilder,
-    private meta: Meta,
-    private http: UserService
-  ) {}
-
   ngOnInit() {
     // กำหนด Meta Tag description
     this.meta.addTag({
@@ -88,6 +91,11 @@ export class LoginComponent implements OnInit {
       username: ['', [Validators.required, Validators.minLength(3)]], // iamsamit
       password: ['', [Validators.required, Validators.minLength(8)]], // Samit@1234
     });
+
+    // เช็คว่าถ้า Login อยู่แล้ว Redirect ไปหน้า Dashboard
+    if (this.auth.isLoggedIn()) {
+      window.location.href = '/dashboard';
+    }
   }
 
   // ฟังก์ชัน Submit สำหรับ Login
@@ -103,10 +111,43 @@ export class LoginComponent implements OnInit {
 
       this.http.Login(this.userData).subscribe({
         next: (data: any) => {
-          console.log(data);
+          // console.log(data);
+          if (data.token != null) {
+            this.dialog.open(AlertDialogComponent, {
+              data: {
+                title: 'เข้าสู่ระบบสำเร็จ',
+                icon: 'check_circle',
+                iconColor: 'green',
+                subtitle: 'กำลังเปลี่ยนหน้าไปหน้าหลัก...',
+                showButtons: false,
+              },
+              disableClose: true,
+            });
+
+            this.userLogin = {
+              username: data.userData.userName,
+              email: data.userData.email,
+              role: data.userData.roles[0],
+              token: data.token,
+            };
+            this.auth.setUser(this.userLogin);
+
+            setTimeout(() => {
+              window.location.href = '/dashboard';
+            }, 2000);
+          }
         },
         error: (error) => {
           console.log(error);
+          this.dialog.open(AlertDialogComponent, {
+            data: {
+              title: 'มีข้อผิดพลาด',
+              icon: 'error',
+              iconColor: 'red',
+              subtitle: 'ข้อมูลเข้าสู่ระบบไม่ถูกต้อง',
+            },
+            disableClose: true,
+          });
         },
       });
     }

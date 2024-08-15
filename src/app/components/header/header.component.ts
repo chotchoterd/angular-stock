@@ -1,8 +1,23 @@
-import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  Output,
+  EventEmitter,
+  Input,
+  inject,
+} from '@angular/core';
 import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton } from '@angular/material/button';
 import { MatToolbar, MatToolbarRow } from '@angular/material/toolbar';
+import { AuthService } from '../../services/auth.service';
+
+type UserProfile = {
+  username: string;
+  email: string;
+  role: string;
+  token: string;
+};
 
 @Component({
   selector: 'app-header',
@@ -20,11 +35,14 @@ import { MatToolbar, MatToolbarRow } from '@angular/material/toolbar';
   ],
 })
 export class HeaderComponent implements OnInit {
+  private auth = inject(AuthService);
+
   // สร้างตัวแปรไว้เก็บข้อมูลผู้ใช้งานที่ Login
-  userProfile: any = {
+  userProfile: UserProfile = {
     username: '',
     email: '',
     role: '',
+    token: '',
   };
 
   @Output() sidenavToggle = new EventEmitter<void>();
@@ -33,9 +51,10 @@ export class HeaderComponent implements OnInit {
   pageName: string = 'Stock';
   version = '17.3';
 
-  constructor() {}
-
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    //ดึงข้อมูลผู้ใช้มาแสดงผล
+    this.userProfile = this.auth.getUser();
+  }
 
   onToggleSidenav() {
     this.sidenavToggle.emit();
@@ -43,5 +62,6 @@ export class HeaderComponent implements OnInit {
 
   onClickSignout() {
     window.location.href = '/login';
+    this.auth.logOut();
   }
 }

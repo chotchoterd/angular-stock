@@ -8,6 +8,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { NgStyle } from '@angular/common';
 import { Title } from '@angular/platform-browser';
 import { flush } from '@angular/core/testing';
+import { AuthService } from './services/auth.service';
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -31,9 +32,13 @@ export class AppComponent {
 
   @ViewChild('sidenav', { static: true }) sidenav: any;
 
-  constructor(private router: Router, private titleService: Title) {
-    // Check if the user is logged in
-    // this.isLoggedIn = localStorage.getItem('LoggedInToken') ? true : false
+  constructor(
+    private router: Router,
+    private titleService: Title,
+    private auth: AuthService
+  ) {
+    // Check if the user is logged in or not with cookie
+    this.isLoggedIn = this.auth.isLoggedIn() ? true : false;
   }
 
   ngOnInit(): void {
