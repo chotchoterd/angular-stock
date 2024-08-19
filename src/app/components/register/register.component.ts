@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   FormGroup,
@@ -24,6 +24,9 @@ import {
   MatCardActions,
 } from '@angular/material/card';
 import { Meta } from '@angular/platform-browser';
+import { UserService } from '../../services/user.service';
+import { AlertDialogComponent } from '../alert-dialog/alert-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-register',
@@ -49,6 +52,12 @@ import { Meta } from '@angular/platform-browser';
   ],
 })
 export class RegisterComponent implements OnInit {
+  private router = inject(Router);
+  private formBuilder = inject(FormBuilder);
+  private meta = inject(Meta);
+  private http = inject(UserService);
+  private dialog = inject(MatDialog);
+
   registerForm!: FormGroup;
   submitted: boolean = false;
 
@@ -61,12 +70,6 @@ export class RegisterComponent implements OnInit {
 
   // สำหรับซ่อนแสดง password
   hide = true;
-
-  constructor(
-    private router: Router,
-    private formBuilder: FormBuilder,
-    private meta: Meta
-  ) {}
 
   ngOnInit(): void {
     // กำหนด Meta Tag description
@@ -93,6 +96,37 @@ export class RegisterComponent implements OnInit {
       this.userData.email = this.registerForm.value.email;
       this.userData.password = this.registerForm.value.password;
 
+      this.http.Register(this.userData).subscribe({
+        next: (data: any) => {
+          this.dialog.open(AlertDialogComponent, {
+            data: {
+              title: 'สมัครสมาชิกสำเร็จ',
+              icon: 'check_circle',
+              iconColor: 'green',
+              subtitle: 'กลับสู่หน้า Login...',
+              showButtons: false,
+            },
+            disableClose: true,
+          });
+
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 1500);
+        },
+        error: (error) => {
+          this.dialog.open(AlertDialogComponent, {
+            data: {
+              title: 'สมัครสมาชิกไม่สำเร็จ',
+              icon: 'error',
+              iconColor: 'red',
+              subtitle:
+                'มีสมาชิกนี้อยู่แล้วหรือการกรอกรหัสไม่ตรง Format Ex. Xxxx@1234',
+            },
+            disableClose: true,
+          });
+          console.log(error);
+        },
+      });
       console.log(this.userData);
     }
   }
