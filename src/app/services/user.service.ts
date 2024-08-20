@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { UserModelLogin, UserModelRegister } from '../models/user.model';
 
@@ -10,6 +10,7 @@ import { UserModelLogin, UserModelRegister } from '../models/user.model';
 export class UserService {
   private apiURL = environment.dotnet_api_url;
 
+  // Header
   httpOptions = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json',
@@ -19,6 +20,7 @@ export class UserService {
 
   constructor(private http: HttpClient) {}
 
+  // Login API
   Login(data: UserModelLogin): Observable<UserModelLogin> {
     return this.http.post<UserModelLogin>(
       this.apiURL + 'Authenticate/login',
@@ -27,6 +29,7 @@ export class UserService {
     );
   }
 
+  // Register API
   Register(data: UserModelRegister): Observable<UserModelRegister> {
     return this.http.post<UserModelRegister>(
       this.apiURL + 'Authenticate/register-user',

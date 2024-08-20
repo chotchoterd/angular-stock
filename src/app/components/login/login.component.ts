@@ -88,8 +88,8 @@ export class LoginComponent implements OnInit {
 
     // กำหนดค่าให้กับ Form
     this.loginForm = this.formBuilder.group({
-      username: ['', [Validators.required, Validators.minLength(3)]], // iamsamit
-      password: ['', [Validators.required, Validators.minLength(8)]], // Samit@1234
+      username: ['user1', [Validators.required, Validators.minLength(3)]], // iamsamit
+      password: ['User1@1234', [Validators.required, Validators.minLength(8)]], // Samit@1234
     });
 
     // เช็คว่าถ้า Login อยู่แล้ว Redirect ไปหน้า Dashboard
@@ -134,7 +134,7 @@ export class LoginComponent implements OnInit {
 
             setTimeout(() => {
               window.location.href = '/dashboard';
-            }, 2000);
+            }, 1500);
           }
         },
         error: (error) => {
