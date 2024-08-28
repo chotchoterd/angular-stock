@@ -35,6 +35,10 @@ import { ProductService } from '../../services/product.service';
 // Import Environment
 import { environment } from '../../../environments/environment';
 import { MatButton, MatIconButton } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
+import { CreateProductDialogComponent } from '../create-product-dialog/create-product-dialog.component';
+import { EditProductDialogComponent } from '../edit-product-dialog/edit-product-dialog.component';
+import { AlertDialogConfirmComponent } from '../alert-dialog-confirm/alert-dialog-confirm.component';
 
 @Component({
   selector: 'app-stock',
@@ -74,6 +78,7 @@ import { MatButton, MatIconButton } from '@angular/material/button';
 })
 export class StockComponent implements OnInit {
   private http = inject(ProductService);
+  private dialog = inject(MatDialog);
 
   // Image URL
   imageUrl = environment.dotnet_api_url_image;
@@ -112,11 +117,11 @@ export class StockComponent implements OnInit {
       )
       .subscribe({
         next: (result) => {
-          this.dataSource.data = result.products;
           console.log(result);
+          this.dataSource.data = result.products;
         },
         error: (error) => {
-          console.log(error);
+          console.error(error);
         },
       });
   }
@@ -133,14 +138,71 @@ export class StockComponent implements OnInit {
     this.dataSource.paginator = this.paginator;
   }
 
+  // Method onClickAddProduct
+  async onClickAddProduct() {
+    // เรียกเปิด dialog สำหรับเพิ่มสินค้า
+    const dialogAddRef = await this.dialog.open(CreateProductDialogComponent, {
+      width: '600px',
+    });
+
+    dialogAddRef.componentInstance.productCreated.subscribe((created) => {
+      if (created) {
+        // ดึงข้อมูลสินค้า
+        this.getProducts();
+      }
+    });
+  }
+
+  // Method onClickEdit
+  async onClickEdit(product: any) {
+    const dialogEditRef = await this.dialog.open(EditProductDialogComponent, {
+      width: '600px',
+      data: product,
+    });
+
+    dialogEditRef.componentInstance.productUpdated.subscribe((updated) => {
+      if (updated) {
+        this.getProducts();
+      }
+    });
+  }
+
   // Method Delete Product
-  onClickDelete(row: any) {
-    // do something
+  async onClickDelete(id: any) {
+    await this.dialog
+      .open(AlertDialogConfirmComponent, {
+        data: {
+          title: 'ยืนยันการลบสินค้า',
+          subtitle: 'คุณต้องการลบสินค้านี้ใช่หรือไม่?',
+          confirmText: 'ยืนยันลบ',
+          cancelText: 'ยกเลิก',
+          confirmAction: () => {
+            console.log('Product deleted! ' + id);
+
+            this.http.deleteProduct(id).subscribe({
+              next: (result) => {
+                // console.log(result)
+                this.dataSource.data = this.dataSource.data.filter(
+                  (product: any) => product.productid !== id
+                );
+              },
+              error: (error) => {
+                console.error(error);
+              },
+            });
+
+            this.dataSource.data = this.dataSource.data.filter(
+              (product: any) => product.productid !== id
+            );
+          },
+        },
+      })
+      .afterClosed();
   }
 
   // Method filter product
   async doFilter(event: any) {
-    // do something
+    // // do something
     this.dataSource.filter = event.target.value.trim();
   }
 
@@ -151,13 +213,9 @@ export class StockComponent implements OnInit {
     this.dataSource.filter = '';
   }
 
-  // Method Export to PDF
-  onClickExportPDF() {
-    // do something
-  }
+  // Export to PDF
+  onClickExportPDF() {}
 
-  // Method Export to Excel
-  onClickExportCSV() {
-    // do something
-  }
+  // Export the CSV file
+  onClickExportCSV() {}
 }
