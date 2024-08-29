@@ -4,6 +4,7 @@ import { RegisterComponent } from './components/register/register.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { StockComponent } from './components/stock/stock.component';
 import { authGuard } from './auth/auth.guard';
+import { EventComponent } from './components/event/event.component';
 
 export const routes: Routes = [
   {
@@ -39,6 +40,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
     data: {
       title: 'Stock',
+    },
+  },
+  {
+    path: 'event',
+    component: EventComponent,
+    canActivate: [authGuard],
+    data: {
+      title: 'Events',
     },
   },
   {

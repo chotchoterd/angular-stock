@@ -28,6 +28,13 @@
     }
   </a>
 
+  <a mat-list-item routerLink="/event" routerLinkActive="active">
+    <mat-icon>calendar_today</mat-icon>
+    @if (isOpened) {
+    <span class="nav-caption">Events</span>
+    }
+  </a>
+
   <a mat-list-item routerLink="/shop" routerLinkActive="active">
     <mat-icon>shopping_cart</mat-icon>
     @if (isOpened) {
